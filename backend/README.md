@@ -39,6 +39,13 @@ A production-ready FastAPI backend for an AI-powered conversational learning ass
 
 5. Go to `http://localhost:8000/docs` to see the API Documentation and test endpoints.
 
+### Running the Streamlit UI
+A Streamlit interface is provided in the `streamlit/` directory. Once the FastAPI backend is running, you can start the UI:
+```bash
+uv run streamlit run streamlit/app.py
+```
+The interface will be available at `http://localhost:8501`.
+
 ### Setup (Docker)
 1. Build the Docker image:
    ```bash
