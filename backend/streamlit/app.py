@@ -8,6 +8,7 @@ if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
 import streamlit as st
+import uuid
 import api_client
 import utils
 
@@ -68,51 +69,72 @@ if uploaded_image is not None:
 
 st.divider()
 
-# --- Section 2: Voice Interaction ---
-st.markdown("## 🎙️ Voice Interaction")
-st.markdown('<p class="big-font">Upload or record an audio question.</p>', unsafe_allow_html=True)
+# --- Section 2: Voice Chatbot ---
+st.markdown("## 🎙️ Voice Assistant Chatbot")
+st.markdown('<p class="big-font">Have a continuous conversation with your AI tutor.</p>', unsafe_allow_html=True)
 
-audio_value = st.audio_input("Record an audio question")
-uploaded_audio = st.file_uploader("Or upload an audio file", type=["wav", "mp3", "m4a"], key="audio_uploader")
+# Initialize chat history and session memory
+if "chat_session_id" not in st.session_state:
+    st.session_state.chat_session_id = str(uuid.uuid4())
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display chat history continuously
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
+        if msg.get("audio"):
+            st.audio(msg["audio"], format="audio/mp3")
+
+st.markdown("---")
+# Input area
+col1, col2 = st.columns([1, 1])
+with col1:
+    audio_value = st.audio_input("Record a message")
+with col2:
+    uploaded_audio = st.file_uploader("Upload an audio file", type=["wav", "mp3", "m4a"], key="audio_uploader")
 
 audio_to_process = audio_value if audio_value is not None else uploaded_audio
 
 if audio_to_process is not None:
-    st.audio(audio_to_process)
-    
-    if st.button("Send Audio", use_container_width=True, type="primary"):
-        with st.spinner("Processing audio... Please wait."):
+    if st.button("Send Message", use_container_width=True, type="primary"):
+        # Add a temporary user message
+        st.session_state.messages.append({"role": "user", "content": "*(Voice Message)*"})
+        
+        with st.spinner("AI is thinking and generating voice..."):
             temp_path = utils.save_temp_file(audio_to_process)
             
             if temp_path:
-                result = api_client.send_audio(temp_path)
+                # Send the session ID so the backend remembers the context!
+                result = api_client.send_audio(temp_path, session_id=st.session_state.chat_session_id)
                 utils.cleanup_temp_file(temp_path)
                 
                 if result:
-                    st.success("Response Received!")
-                    
                     transcription = result.get("transcription", result.get("text", "No transcription available."))
                     response_text = result.get("response", result.get("answer", "No response text available."))
                     audio_response = result.get("audio", result.get("audio_data", None))
                     
-                    st.markdown("### 🗣️ You Said:")
-                    st.info(transcription)
+                    # Update the placeholder user message with actual transcription
+                    st.session_state.messages[-1]["content"] = f'🗣️ **You:** "{transcription}"'
                     
-                    st.markdown("### 🤖 AI Response:")
-                    st.write(response_text)
-                    
+                    # Decode audio response
+                    audio_bytes = None
                     if audio_response:
                         import base64
                         try:
-                            # Attempt base64 decode if raw audio bytes provided
                             audio_bytes = base64.b64decode(audio_response)
-                            st.audio(audio_bytes, format="audio/mp3")
                         except Exception:
-                            # Fallback if its a valid URL
-                            if isinstance(audio_response, str) and (audio_response.startswith("http") or audio_response.startswith("/")):
-                                st.audio(audio_response)
-                            else:
-                                st.error("Could not play the returned audio. Invalid format.")
+                            pass
+                    
+                    # Add AI response to history
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": response_text,
+                        "audio": audio_bytes
+                    })
+                    
+                    # Refresh UI to show new messages
+                    st.rerun()
 
 st.divider()
 st.caption("AI Assistive System - Backend must be running on localhost:8000 for full functionality.")
