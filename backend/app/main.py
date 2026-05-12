@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
 from app.config.logging import logger
-from app.api.routes import image, chat, health
+from app.api.routes import image, chat, health, siri
 import os
 
 def create_app() -> FastAPI:
@@ -27,6 +27,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/health", tags=["health"])
     app.include_router(image.router, prefix="/image", tags=["image"])
     app.include_router(chat.router, prefix="/chat", tags=["chat"])
+    app.include_router(siri.router, prefix="/api", tags=["siri"])
 
     return app
 
