@@ -1,57 +1,98 @@
-# AI Assistive Learning Project
+# 🌟 Vidya — Multilingual Voice Learning Assistant
 
-Welcome to the AI Assistive Learning project! This application is designed to be an AI-powered conversational learning assistant for visually impaired students. It combines advanced vision processing, natural language text-to-speech, audio transcription, and even Braille translation to create an accessible learning environment.
+Welcome to the **Vidya** project! This application is designed to be an AI-powered conversational learning assistant for students (particularly supporting visually impaired students). It combines advanced vision processing, natural language Text-to-Speech (via Sarvam AI), audio transcription (via Whisper), deep learning intent classification, and Diagram RAG to create a highly accessible and interactive learning environment.
 
-This document serves as a high-level guide to help you navigate the project structure and understand how the different components fit together.
+This document serves as a high-level guide to help you navigate the completely revamped full-stack project structure.
 
-## 🧭 Project Navigation Guide
+---
 
-The entire application is currently housed within the `backend/` directory, which contains both the FastAPI backend and the Streamlit frontend. Here is a breakdown of the project architecture to help you find your way around:
+## 🧭 Project Architecture & Navigation Guide
+
+The project has evolved into a modern full-stack application, split cleanly between a React Web Frontend and a robust Python/FastAPI Backend.
 
 ```text
-EDA_proj/
-└── backend/                  # Main application workspace
+PA_PEC/
+├── frontend/                 # 🌐 React + Vite Web Application
+│   ├── src/                  
+│   │   ├── App.jsx           # Main layout (1/3 Voice Chat / 2/3 Information Display)
+│   │   └── SiriOrb.jsx       # Interactive animated voice recording component
+│   └── package.json          # Node dependencies
+│
+└── backend/                  # 🧠 Core Python AI Application
     ├── app/                  # FastAPI Application Core logic
-    │   ├── agents/           # The "Brains": Agents handling Vision, Explanation, Voice, & Braille tasks
-    │   ├── api/routes/       # API Endpoints (e.g., `/chat/voice`, `/image/analyze`)
-    │   ├── core/             # Application orchestration (combining agents into pipelines)
-    │   ├── schemas/          # Data validation models (Pydantic models)
-    │   ├── services/         # External service wrappers (OpenAI calls, Whisper STT, TTS)
-    │   └── utils/            # Helper scripts (audio conversion, temp file management)
+    │   ├── api/routes/       # API Endpoints (e.g., `/api/siri-chat`, `/image/analyze`)
+    │   └── agents/           # Specialized vision and explanation processing
     │
-    ├── streamlit/            # User Interface (Frontend API Client)
-    │   ├── app.py            # Main Streamlit application file (run this to see the UI!)
-    │   └── api_client.py     # Functions that connect the frontend UI to the FastAPI backend
+    ├── voice/                # The Multilingual Voice Pipeline
+    │   ├── diagram_rag_agent.py # Fetches rich educational data based on voice queries
+    │   ├── intent_router.py     # Classifies user intent to route to the correct agent
+    │   ├── speech_to_text.py    # Whisper-powered STT
+    │   └── text_to_speech.py    # Sarvam AI-powered multilingual TTS
     │
-    ├── tests/                # Automated unit and integration tests
+    ├── data/                 # Educational Modules (JSON files like digestive_system.json)
     │
-    ├── .env.example          # Template for required environment keys (copy this to .env)
-    ├── pyproject.toml        # Python dependency definitions (using uv package manager)
-    └── README.md             # Deep-dive instructions on installation, setup, and Docker config
+    ├── streamlit/            # 📊 Machine Learning Evaluation UI
+    │   └── evaluation_dashboard.py # Dashboard for Accuracy, Precision, F1, and ROC Curves
+    │
+    ├── voice_chat.py         # 🎙️ Headless pure-voice terminal chatbot script
+    ├── gan_analysis.py       # ML experiments for Mel-Spectrogram GAN synthesis
+    ├── pyproject.toml        # Python dependencies (managed via uv)
+    └── .env.example          # Template for required environment keys (OpenAI, Sarvam)
 ```
+
+---
 
 ## 🚀 Quick Start Guide
 
-If you are a new developer looking to run the project locally, here is the order of operations:
+### 1. Backend Setup (FastAPI & AI Pipelines)
+1. Navigate into the `backend/` directory: `cd backend`
+2. Create a `.env` file by copying the contents of `.env.example`. 
+   - **Crucial**: Add your `OPENAI_API_KEY` and `SARVAM_API_KEY`.
+3. Install the Python dependencies using `uv`: 
+   ```powershell
+   uv pip install -e .
+   ```
+4. Start the FastAPI server:
+   ```powershell
+   uv run uvicorn app.main:app --reload
+   ```
 
-1. **Environment Setup**
-   * Navigate into `backend/`.
-   * Create a `.env` file by copying the contents of `.env.example` and adding your real API keys (like `OPENAI_API_KEY`).
-   * Install the dependencies using the `uv` package manager: run `uv sync`.
+### 2. Frontend Setup (React UI)
+1. Open a new terminal and navigate to the `frontend/` directory: `cd frontend`
+2. Install the Node modules:
+   ```powershell
+   npm install
+   ```
+3. Start the Vite development server:
+   ```powershell
+   npm run dev
+   ```
+4. Open the provided `localhost` link in your browser to interact with the gorgeous Siri-orb UI!
 
-2. **Understand the Backend**
-   * The entry point for the FastAPI server is `app/main.py`.
-   * To see how incoming web requests are handled, check the files in `app/api/routes/`.
-   * To see the core AI logic, explore the `app/agents/` folder.
+---
 
-3. **Start the Servers**
-   * **Backend API (Terminal 1):** Inside the `backend/` folder, run `uv run uvicorn app.main:app --reload`.
-   * **Frontend UI (Terminal 2):** Inside the `backend/` folder, run `uv run streamlit run streamlit/app.py`.
+## 🔬 Standalone Tools & Dashboards
 
-4. **Detailed Technical Documentation**
-   * For more granular, specialized instructions regarding tools like `liblouis` and `ffmpeg`, refer to the `backend/README.md` file.
+The backend contains several powerful standalone tools that can be run independently of the web application:
+
+### The ML Evaluation Dashboard (Streamlit)
+To view the experimental results and comparison rubrics (Accuracy, Precision, Recall, F1) between our BiLSTM, CNN, and Transformer models, run the Streamlit dashboard:
+```powershell
+cd backend
+streamlit run streamlit/evaluation_dashboard.py
+```
+*This opens a local web page with interactive Plotly graphs, including Grouped Bar Charts and ROC curves.*
+
+### The Headless Terminal Voice Chat
+Want to talk to the AI without a web browser? You can run the Siri-style script directly in your terminal. It will calibrate your microphone and talk to you continuously until you say "goodbye".
+```powershell
+cd backend
+python voice_chat.py
+```
+
+---
 
 ## 💡 How it Works
 
-* **Image Learning Flow:** The user uploads an image via the Streamlit UI -> Streamlit calls the backend `/image/analyze` API -> The backend initializes the **Vision Agent** to see the image, passes it to the **Explanation Agent** to simplify it, and finally passes text to the **Braille Agent** to convert it.
-* **Voice Chat Flow:** The user talks into the UI microphone -> Streaming audio goes to `/chat/voice` API -> The **Voice Agent** transcribes it, thinks of a response, and generates TTS audio to play back through the UI.
+* **Voice Chat Flow (Web)**: The user clicks the Siri Orb in the React frontend and speaks -> The browser sends the audio Blob to the `POST /api/siri-chat` FastAPI endpoint -> The backend uses `SpeechToText` to transcribe -> `IntentRouter` figures out what the user wants -> `DiagramRAGAgent` pulls JSON data (like `digestive_system.json`) -> `TextToSpeech` (Sarvam AI) generates the audio response -> The backend returns the Base64 audio + structured data -> The frontend plays the audio aloud and beautifully renders the 2/3 screen data cards.
+* **Image Learning Flow**: The user uploads an image -> The backend `/image/analyze` API uses the Vision Agent to see the image -> The Explanation Agent simplifies it -> The Braille Agent converts it for tactile feedback.
