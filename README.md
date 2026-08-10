@@ -1,4 +1,4 @@
-# 🌟 Vidya — Multilingual Voice Learning Assistant
+# 🌟 SparshVaani — Multilingual Voice Learning Assistant
 
 Welcome to the **Vidya** project! This application is designed to be an AI-powered conversational learning assistant for students (particularly supporting visually impaired students). It combines advanced vision processing, natural language Text-to-Speech (via Sarvam AI), audio transcription (via Whisper), deep learning intent classification, and Diagram RAG to create a highly accessible and interactive learning environment.
 
